@@ -9,7 +9,14 @@ MAX_RETRIES = 3
 
 class DeviceClient:
     """Класс для взаимодействия с устройством по сети."""
-    TRANSIENT_MESSAGE = {"device buse"}  # Костыль, предусмотренный ответ ошибки
+    TRANSIENT_MESSAGE = {"device busy"}  # Костыль, предусмотренный ответ ошибки
+    TRANSIENT_ERRORS = {
+        "connection_refused",
+        "timeout",
+        "bad_json",
+        "network_error",
+        "no_data"
+    }
 
     def __init__(self, host: str, port: int, timeout: float = 5.0):
         self.host = host
@@ -26,15 +33,22 @@ class DeviceClient:
                 line = reader.readline()
 
                 if not line:
-                    return None
+                    return {"error": "no_data"}
                 return json.loads(line.strip())
-        except (OSError, json.JSONDecodeError):
-            return None
+        except ConnectionRefusedError:
+            return {"error": "connection_refused"}
+        except socket.timeout:
+            return {"error": "timeout"}
+        except json.JSONDecodeError:
+            return {"error": "bad_json"}
+        except OSError:
+            return {"error": "network_error"}
 
     def is_transient(self, response: Optional[Dict[str, Any]]) -> bool:
         """Временная ли это неудача (стоит повторить), или окончательная."""
-        if response is None:
-            return True # связи не было вообще — точно стоит повторить
+        if "error" in response:
+            return response.get("error") in self.TRANSIENT_ERRORS
+            # связи не было вообще — точно стоит повторить
         return response.get("message") in self.TRANSIENT_MESSAGE
 
 class Scenario:
@@ -110,15 +124,15 @@ class TestRunner:
             print(f"{status} {result['name']} (попыток: {result['attempts']})")
         print(f"\nИтого: {passed_count}/{len(self.report)} тестов пройдено")
 
+# Список сценариев по умолчанию — тоже на уровне модуля,
+# чтобы API и тесты могли его переиспользовать.
+DEFAULT_SCENARIOS = [
+    Scenario("Проверка связи (ping)", "ping", "result", "PONG"),
+    Scenario("Проверка статуса устройства", "GET_STATUS", "result", "ok"),
+    Scenario("Установка громкости 50", "SET_VOLUME 50", "volume", 50),
+]
 
 if __name__ == "__main__":
-    # Инициализация списка объектов сценариев
-    DEFAULT_SCENARIOS = [
-        Scenario("Проверка связи (ping)", "ping", "result", "PONG"),
-        Scenario("Проверка статуса устройства", "GET_STATUS", "result", "ok"),
-        Scenario("Установка громкости 50", "SET_VOLUME 50", "volume", 50),
-    ]
-
     # Создание компонентов системы
     client = DeviceClient(HOST, PORT)
     runner = TestRunner(client, MAX_RETRIES)
