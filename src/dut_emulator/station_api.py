@@ -1,6 +1,6 @@
 import sys
 import pathlib
-from typing import Any
+import httpx
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "dut_emulator"))
 
@@ -33,9 +33,24 @@ def get_info():
 
 @app.post("/run_test")
 def post_run_test(scenario: ScenarioIn):
+    delivered = True
     client_scenario = Scenario(scenario.name, scenario.command, scenario.expected_key, scenario.expected_value)
-    return make_con().run_scenario(client_scenario)
+    one_test = make_con().run_scenario(client_scenario)
+    try:
+        httpx.post('http://127.0.0.1:8100/results', json=one_test)
+    except httpx.HTTPError as e:
+        print("Не удалось отправить в MES:", e)
+        delivered = False
+    return {"results": one_test, "mes_delivered": delivered}
 
 @app.post("/run_all_test")
 def post_run_all_test():
-    return make_con().run_all(DEFAULT_SCENARIOS)
+    all_test = make_con().run_all(DEFAULT_SCENARIOS)
+    delivered = True
+    try:
+        for i in all_test:
+            httpx.post('http://127.0.0.1:8100/results', json=i).raise_for_status()
+    except httpx.HTTPError as e:
+        print("Не удалось отправить в MES:", e)
+        delivered = False
+    return {"results": all_test, "mes_delivered": delivered}
