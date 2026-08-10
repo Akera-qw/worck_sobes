@@ -18,7 +18,7 @@ class ScenarioIn(BaseModel):
 
 def make_con():
     client = DeviceClient(HOST, PORT)
-    return TestRunner(client,max_retries=1)
+    return TestRunner(client,max_retries=3)
 
 @app.get("/health")
 def get_health():
