@@ -20,6 +20,19 @@ def make_con():
     client = DeviceClient(HOST, PORT)
     return TestRunner(client,max_retries=3)
 
+def build_soap(result: dict) -> str:
+    return f"""<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mes="http://factory.example/mes">
+  <soap:Body>
+    <mes:SubmitResult>
+      <mes:name>{result['name']}</mes:name>
+      <mes:passed>{str(result['passed']).lower()}</mes:passed>
+      <mes:attempts>{result['attempts']}</mes:attempts>
+      <mes:last_response>{result['last_response']}</mes:last_response>
+    </mes:SubmitResult>
+  </soap:Body>
+</soap:Envelope>"""
+
 @app.get("/health")
 def get_health():
     return {"status": "ok"}
@@ -50,6 +63,23 @@ def post_run_all_test():
     try:
         for i in all_test:
             httpx.post('http://127.0.0.1:8100/results', json=i).raise_for_status()
+    except httpx.HTTPError as e:
+        print("Не удалось отправить в MES:", e)
+        delivered = False
+    return {"results": all_test, "mes_delivered": delivered}
+
+@app.post("/run_all_test_soap")
+def run_all_test_soap():
+    all_test = make_con().run_all(DEFAULT_SCENARIOS)
+    delivered = True
+    try:
+        for i in all_test:
+            xml = build_soap(i)
+            httpx.post(
+                "http://127.0.0.1:8200/mes-soap",
+                content=xml,
+                headers={"Content-Type": "text/xml"},
+            ).raise_for_status()
     except httpx.HTTPError as e:
         print("Не удалось отправить в MES:", e)
         delivered = False
