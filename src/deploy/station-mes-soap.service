@@ -1,0 +1,14 @@
+[Unit]
+Description=MES(SOAP) dla testov emulatora
+After=network.target
+
+[Service]
+Type=simple
+User=akera
+WorkingDirectory=/opt/station/src/mes
+ExecStart=/opt/station/.venv/bin/uvicorn mes_soap:app --host 127.0.0.1 --port 8200
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
