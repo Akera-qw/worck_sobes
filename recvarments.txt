@@ -1,4 +1,0 @@
-fastapi
-httpx
-spyne zeep lxml
-psycopg[binary]

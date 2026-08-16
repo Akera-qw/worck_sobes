@@ -11,7 +11,6 @@ def make_runner() -> TestRunner:
     client = DeviceClient(HOST, PORT)
     return TestRunner(client, MAX_RETRIES)
 
-
 def test_ping():
     scenario = Scenario("Проверяем PING", "ping", "result", "PONG")
     result = make_runner().run_scenario(scenario)
