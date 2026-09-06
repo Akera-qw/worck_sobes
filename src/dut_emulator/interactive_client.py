@@ -8,7 +8,7 @@
 Запускать после того, как в другом терминале запущен emulator.py:
     py interactive_client.py
 
-Чтобы выйти — напечатай exit и нажми Enter.
+Чтобы выйти - напечатай exit и нажми Enter.
 """
 
 import json
@@ -23,7 +23,7 @@ def main() -> None:
         try:
             sock.connect((HOST, PORT))
             print("Подключился к эмулятору. Печатай команды (PING, GET_STATUS, SET_VOLUME 50, ...).")
-            print("Чтобы выйти — напечатай exit")
+            print("Чтобы выйти - напечатай exit")
         except ConnectionRefusedError:
             print("Что-то пошло не так, ошибка 500")
             return
@@ -41,7 +41,7 @@ def main() -> None:
             try:
                 data = sock.recv(1024)
             except socket.timeout:
-                print("<<< Таймаут — устройство не ответило")
+                print("<<< Таймаут - устройство не ответило")
                 continue
 
             if not data:
