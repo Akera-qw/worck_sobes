@@ -5,7 +5,7 @@ pytest находит этот файл автоматически - импор�
 
 Главная задача: поднять эмулятор устройства перед прогоном тестов
 и погасить после. Без этого тесты требовали бы, чтобы кто-то заранее
-запустил emulator.py руками — на CI такого «кого-то» нет.
+запустил emulator.py руками - на CI такого «кого-то» нет.
 """
 
 import pathlib
@@ -23,7 +23,7 @@ EMULATOR_PATH = pathlib.Path(__file__).parent.parent / "dut_emulator" / "emulato
 
 
 def wait_for_port(host: str, port: int, timeout: float = 10.0) -> bool:
-    """Ждёт, пока порт начнёт принимать подключения. True — дождались."""
+    """Ждёт, пока порт начнёт принимать подключения. True - дождались."""
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
