@@ -12,7 +12,7 @@ class TestResult(BaseModel):
     last_response: dict
 
 def get_conn():
-    return psycopg.connect(host="127.0.0.1", port=5432, dbname="station", user="postgres", password="secret")
+    return psycopg.connect(host="127.0.0.1", port=5432, dbname="station", user="postgres", password="DB_PASSWORD")
 
 @app.post("/results")
 def post_results(test_result: TestResult):
