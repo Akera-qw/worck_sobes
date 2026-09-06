@@ -124,7 +124,7 @@ class TestRunner:
             print(f"{status} {result['name']} (попыток: {result['attempts']})")
         print(f"\nИтого: {passed_count}/{len(self.report)} тестов пройдено")
 
-# Список сценариев по умолчанию — тоже на уровне модуля,
+# Список сценариев по умолчанию - тоже на уровне модуля,
 # чтобы API и тесты могли его переиспользовать.
 DEFAULT_SCENARIOS = [
     Scenario("Проверка связи (ping)", "ping", "result", "PONG"),
